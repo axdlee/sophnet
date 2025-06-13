@@ -132,10 +132,10 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
                 ParameterRule(
                     name="dimensions",
                     label=I18nObject(en_US="Embedding Dimensions, support 1,024/768/512/256/128/64", zh_Hans="输出Embeddings的维度，支持1,024/768/512/256/128/64"),
-                    type=ParameterType.INTEGER,
+                    type=ParameterType.INT,
                     required=True,
-                    default=1024,
-                    options=[1024, 768, 512, 256, 128, 64]
+                    default="1024",
+                    options=["1024", "768", "512", "256", "128", "64"]
                 ),
             ],
             pricing=PriceConfig(
