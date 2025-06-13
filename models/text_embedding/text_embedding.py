@@ -156,10 +156,7 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
         api_key = credentials.get("api_key")
         easyllm_id = credentials.get("easyllm_id", model)
         dimensions = int(credentials.get("dimensions", 1024))
-        endpoint_url = credentials.get("endpoint_url", "")
-        if not endpoint_url.endswith("/"):
-            endpoint_url += "/"
-        url = f"{endpoint_url}embeddings"
+        url = credentials.get("endpoint_url", "")
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
@@ -174,4 +171,4 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
         api_key = credentials.get("api_key")
         if not api_key:
             raise ValueError("api_key is required")
-        credentials["endpoint_url"] = f"https://www.sophnet.com/api/open-apis/projects/{project_id}/easyllms"
+        credentials["endpoint_url"] = f"https://www.sophnet.com/api/open-apis/projects/{project_id}/easyllms/embeddings"
