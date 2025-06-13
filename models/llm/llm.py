@@ -131,7 +131,7 @@ class SophnetLargeLanguageModel(OAICompatLargeLanguageModel):
             features=(
                 [
                     ModelFeature.TOOL_CALL,
-                    ModelFeature.MULTI_TOOL_CALL,
+                    ModelFeature.AGENT_THOUGHT,
                     ModelFeature.STREAM_TOOL_CALL,
                 ]
                 if credentials.get("function_calling_type") == "tool_call"
@@ -140,7 +140,7 @@ class SophnetLargeLanguageModel(OAICompatLargeLanguageModel):
             fetch_from=FetchFrom.CUSTOMIZABLE_MODEL,
             model_properties={
                 ModelPropertyKey.CONTEXT_SIZE: int(
-                    credentials.get("context_size", 64000)
+                    credentials.get("context_size", 65536)
                 ),
                 ModelPropertyKey.MODE: LLMMode.CHAT.value,
             },
@@ -154,7 +154,7 @@ class SophnetLargeLanguageModel(OAICompatLargeLanguageModel):
                 ParameterRule(
                     name="max_tokens",
                     use_template="max_tokens",
-                    default=16384,
+                    default=65536,
                     min=1,
                     max=int(credentials.get("max_tokens", 65536)),
                     label=I18nObject(en_US="Max Tokens", zh_Hans="最大标记"),
@@ -167,32 +167,27 @@ class SophnetLargeLanguageModel(OAICompatLargeLanguageModel):
                     type=ParameterType.FLOAT,
                 ),
                 ParameterRule(
-                    name="top_k",
-                    use_template="top_k",
-                    label=I18nObject(en_US="Top K", zh_Hans="Top K"),
-                    type=ParameterType.FLOAT,
-                ),
-                ParameterRule(
                     name="frequency_penalty",
                     use_template="frequency_penalty",
                     label=I18nObject(en_US="Frequency Penalty", zh_Hans="重复惩罚"),
                     type=ParameterType.FLOAT,
                 ),
                 ParameterRule(
-                    name="enable_thinking",
-                    use_template="enable_thinking",
-                    default=True,
-                    label=I18nObject(en_US="Thinking mode", zh_Hans="启用思考模式"),
-                    type=ParameterType.BOOLEAN,
+                    name="presence_penalty",
+                    use_template="presence_penalty",
+                    label=I18nObject(en_US="Presence Penalty", zh_Hans="存在惩罚"),
+                    type=ParameterType.FLOAT,
                 ),
                 ParameterRule(
-                    name="thinking_budget",
-                    use_template="thinking_budget",
-                    default=2048,
-                    min=1,
-                    max=int(credentials.get("thinking_budget", 16384)),
-                    label=I18nObject(en_US="Thinking budget", zh_Hans="思考长度限制"),
-                    type=ParameterType.INT,
+                    name="response_format",
+                    use_template="response_format",
+                    label=I18nObject(en_US="Response Format", zh_Hans="响应格式"),
+                    type=ParameterType.STRING,
+                    required=False,
+                    options=[
+                        "text",
+                        "json",
+                    ],
                 ),
             ],
         )
