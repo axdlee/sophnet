@@ -7,7 +7,8 @@ SophNet provides full-blood DeepSeek R1/V3, Qwen, QwQ models, and its own DeepSe
 ## Configure
 
 After installing the plugin, configure your Sophnet settings in the Model Provider section. This includes your API key ([find it here](https://www.sophnet.com/#/project/key)) and Project ID. Save to use Sophnet.
-
+![CONFIG](./_assets/01.png)
+![CONFIG DONE](./_assets/02.png)
 ---
 
 ## About Sophnet
