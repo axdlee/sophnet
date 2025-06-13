@@ -18,10 +18,7 @@ help:
     en_US: https://www.sophnet.com/
 supported_model_types:
   - llm
-  - text-embedding
-  - rerank
-  - speech2text
-  - tts    
+  - text-embedding 
 configurate_methods:
   - predefined-model
   - customizable-model
@@ -48,27 +45,15 @@ models:
     predefined:
       - models/llm/*.yaml
     position: models/llm/_position.yaml
-  rerank:
-    predefined:
-      - models/rerank/*.yaml
-  speech2text:
-    predefined:
-      - models/speech2text/*.yaml
   text_embedding:
     predefined:
-      - models/text_embedding/*.yaml
-  tts:
-    predefined:
-      - models/tts/*.yaml      
+      - models/text_embedding/*.yaml   
 extra:
   python:
     provider_source: provider/sophnet.py
     model_sources:
       - models/llm/llm.py
-      - models/rerank/rerank.py
       - models/text_embedding/text_embedding.py
-      - models/tts/tts.py
-      - models/speech2text/speech2text.py
 
 model_credential_schema:
   model:
@@ -105,6 +90,9 @@ model_credential_schema:
         zh_Hans: 在此输入您的模型上下文长度
       required: true
       type: text-input
+      show_on:
+        - value: llm
+          variable: __model_type
     - variable: max_tokens
       default: "4096"
       label:
@@ -132,3 +120,24 @@ model_credential_schema:
         - value: llm
           variable: __model_type
       type: select
+    - variable: easyllm_id
+      label:
+        en_US: EasyLLM ID
+      placeholder:
+        en_US: Enter your EasyLLM ID
+        zh_Hans: 在此输入您的 EasyLLM ID
+      type: text-input
+      required: true
+      show_on:
+        - value: text_embedding
+          variable: __model_type
+    - variable: dimensions
+      default: "1024"
+      label:
+        en_US: Embedding Dimensions
+        zh_Hans: Embedding 维度
+      placeholder:
+        en_US: Enter your Embedding Dimensions
+        zh_Hans: 在此输入您的 Embedding 维度
+      type: text-input
+      required: true
