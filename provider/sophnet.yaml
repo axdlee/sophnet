@@ -6,9 +6,9 @@ description:
   en_US: SophNet provides full-blood DeepSeek R1/V3, Qwen, QwQ models, and its own DeepSeek V3 Fast model, as well as text-to-speech, image OCR, document parsing, and other models.
   zh_Hans: SophNet 提供满血版 DeepSeek R1/V3，Qwen, QwQ 模型，以及其独有的 DeepSeek V3 Fast 模型, 此外还提供文字转语音，图片OCR， 文档解析等模型。
 icon_large:
-  en_US: logo.svg
+  en_US: icon.svg
 icon_small:
-  en_US: logo.svg
+  en_US: icon.svg
 background: "#E5E7EB"
 help:
   title:
