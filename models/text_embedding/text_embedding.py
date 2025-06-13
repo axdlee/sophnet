@@ -36,13 +36,28 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
         """
         Sophnet embedding接口分批调用，兼容OAI接口风格
         """
+        # 获取模型参数
+        context_size = self._get_context_size(model, credentials)
+        max_chunks = self._get_max_chunks(model, credentials)
         url, headers, easyllm_id, dimensions = self._build_request_params(credentials, model)
-        max_batch = 10  # Sophnet API最大支持10条
+
+        # 1. 按context_size截断每条文本
+        processed_texts = []
+        for text in texts:
+            num_tokens = self._get_num_tokens_by_gpt2(text)
+            if num_tokens > context_size:
+                # 近似按字符截断
+                cutoff = int(len(text) * context_size / num_tokens)
+                processed_texts.append(text[:cutoff])
+            else:
+                processed_texts.append(text)
+
+        # 2. 按max_chunks分批请求
         all_embeddings = []
         total_tokens = 0
 
-        for i in range(0, len(texts), max_batch):
-            batch_texts = texts[i:i+max_batch]
+        for i in range(0, len(processed_texts), max_chunks):
+            batch_texts = processed_texts[i:i+max_chunks]
             payload = {
                 "easyllm_id": easyllm_id,
                 "input_texts": batch_texts,
@@ -103,7 +118,7 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
             model_type=ModelType.TEXT_EMBEDDING,
             fetch_from=FetchFrom.CUSTOMIZABLE_MODEL,
             model_properties={
-                ModelPropertyKey.CONTEXT_SIZE: int(credentials.get("context_size", 8192)),
+                ModelPropertyKey.CONTEXT_SIZE: 8192,
                 ModelPropertyKey.MAX_CHUNKS: 10,
             },
             parameter_rules=[
