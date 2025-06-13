@@ -15,7 +15,7 @@ help:
     en_US: Get your API Key from SophNet
     zh_Hans: 从 SophNet 获取 API Key
   url:
-    en_US: https://www.sophnet.com/
+    en_US: https://www.sophnet.com/#/project/key
 supported_model_types:
   - llm
   - text-embedding 
