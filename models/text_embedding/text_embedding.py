@@ -53,7 +53,7 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
                 response.raise_for_status()
                 data = response.json()
             except Exception as e:
-                raise RuntimeError(f"Sophnet embedding API调用失败: {e}")
+                raise RuntimeError(f"Sophnet embedding API call failed: {e}")
 
             # 解析返回结果
             batch_embeddings = [item["embedding"] for item in data.get("data", [])]
