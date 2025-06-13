@@ -129,15 +129,37 @@ model_credential_schema:
       type: text-input
       required: true
       show_on:
-        - value: text_embedding
+        - value: text-embedding
           variable: __model_type
     - variable: dimensions
-      default: "1024"
+      default: '1024'
       label:
         en_US: Embedding Dimensions
         zh_Hans: Embedding 维度
       placeholder:
         en_US: Enter your Embedding Dimensions
         zh_Hans: 在此输入您的 Embedding 维度
-      type: text-input
+      type: select
+      options:
+        - label:
+            en_US: '1024'
+          value: '1024'
+        - label:
+            en_US: '768'
+          value: '768'
+        - label:
+            en_US: '512'
+          value: '512'
+        - label:
+            en_US: '256'
+          value: '256'
+        - label:
+            en_US: '128'
+          value: '128'
+        - label:
+            en_US: '64'
+          value: '64'
       required: true
+      show_on:
+        - value: text-embedding
+          variable: __model_type
