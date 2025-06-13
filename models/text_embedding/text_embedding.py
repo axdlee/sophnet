@@ -43,7 +43,7 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
         self._add_custom_parameters(credentials)
         api_key = credentials["api_key"]
         dimensions = int(credentials.get("dimensions", 1024))
-        easyllm_id = model
+        easyllm_id = credentials.get("easyllm_id", model)
         endpoint_url = credentials.get("endpoint_url", "")
         if not endpoint_url.endswith("/"):
             endpoint_url += "/"
@@ -117,8 +117,9 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
                 ),
             ],
             pricing=PriceConfig(
-                input=0,  # 可根据实际Sophnet计费补充
-                unit=1,
+                input=0.5, # https://www.sophnet.com/docs/component/fee.html
+                output=0,
+                unit=0.000001,
                 currency="RMB"
             ),
         )
