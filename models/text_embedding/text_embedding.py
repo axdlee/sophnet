@@ -26,8 +26,38 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
     """
 
     def validate_credentials(self, model: str, credentials: dict) -> None:
+        """
+        校验Sophnet API凭证有效性，需project_id、api_key、easyllm_id、dimensions
+        """
         self._add_custom_parameters(credentials)
-        super().validate_credentials(model, credentials)
+        api_key = credentials.get("api_key")
+        easyllm_id = credentials.get("easyllm_id", model)
+        dimensions = int(credentials.get("dimensions", 1024))
+        endpoint_url = credentials.get("endpoint_url", "")
+        if not endpoint_url.endswith("/"):
+            endpoint_url += "/"
+        url = f"{endpoint_url}embeddings"
+
+        payload = {
+            "easyllm_id": easyllm_id,
+            "input_texts": ["ping"],
+            "dimensions": dimensions
+        }
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=10)
+            if response.status_code != 200:
+                raise CredentialsValidateFailedError(
+                    f"Credentials validation failed with status code {response.status_code}"
+                )
+            data = response.json()
+            if not data.get("data"):
+                raise CredentialsValidateFailedError("Credentials validation failed: no embedding data returned")
+        except Exception as ex:
+            raise CredentialsValidateFailedError(str(ex)) from ex
 
     def _invoke(
         self,
