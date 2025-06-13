@@ -1,11 +1,11 @@
 import requests
 from typing import Optional
-from dify_plugin.interfaces.model.text_embedding_model import TextEmbeddingModel
+from dify_plugin.interfaces.model.openai_compatible.text_embedding import OAICompatEmbeddingModel
 from dify_plugin.entities.model import EmbeddingInputType
 from dify_plugin.entities.model.text_embedding import TextEmbeddingResult
 
 
-class SophnetTextEmbeddingModel(TextEmbeddingModel):
+class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
     """
     Model class for Sophnet text embedding model.
     """
@@ -33,12 +33,16 @@ class SophnetTextEmbeddingModel(TextEmbeddingModel):
         :return: embeddings result
         """
         self._add_custom_parameters(credentials)
-        project_id = credentials["project_id"]
         api_key = credentials["api_key"]
         dimensions = credentials.get("dimensions", 1024)
         easyllm_id = model
+        
+        endpoint_url = credentials.get("endpoint_url", "")
+        if not endpoint_url.endswith("/"):
+            endpoint_url += "/"
 
-        url = f"https://www.sophnet.com/api/open-apis/projects/{project_id}/easyllms/embeddings"
+        url = f"{endpoint_url}/embeddings"
+
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
@@ -63,10 +67,6 @@ class SophnetTextEmbeddingModel(TextEmbeddingModel):
             embeddings=embeddings,
             usage=usage
         )
-
-    def get_num_tokens(self, model: str, credentials: dict, texts: list[str]) -> int:
-        # 若API未提供token计数接口，可用简单分词近似
-        return sum(len(text.split()) for text in texts)
 
     @classmethod
     def _add_custom_parameters(cls, credentials: dict) -> None:
