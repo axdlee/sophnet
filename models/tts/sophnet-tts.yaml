@@ -1,0 +1,135 @@
+model: sophnet-tts
+model_type: tts
+label:
+  en_US: Sophnet Text to Speech
+  zh_Hans: Sophnet 文本转语音
+model_properties:
+  default_voice: longxiaochun
+  audio_type: mp3
+  word_limit: 500
+  max_workers: 3
+  voices:
+    - name: 龙小春
+      mode: longxiaochun
+      language: zh
+    - name: 龙小夏
+      mode: longxiaoxia
+      language: zh
+    - name: 龙小成
+      mode: longxiaocheng
+      language: zh
+    - name: 龙小白
+      mode: longxiaobai
+      language: zh
+    - name: 龙老铁
+      mode: longlaotie
+      language: zh
+    - name: 龙叔
+      mode: longshu
+      language: zh
+    - name: 龙硕
+      mode: longshuo
+      language: zh
+    - name: 龙婧
+      mode: longjing
+      language: zh
+    - name: 龙悦
+      mode: longyue
+      language: zh
+    - name: 龙湾
+      mode: longwan
+      language: zh
+    - name: 龙成
+      mode: longcheng
+      language: zh
+    - name: 龙华
+      mode: longhua
+      language: zh
+    - name: Stella
+      mode: loongstella
+      language: en
+    - name: Bella
+      mode: loongbella
+      language: en
+    - name: 林小梦
+      mode: linxiaomeng
+      language: zh
+    - name: 王小麦
+      mode: wangxiaomai
+      language: zh
+    - name: 李小雯
+      mode: lixiaowen
+      language: zh
+    - name: 杨小媛
+      mode: yangxiaoyuan
+      language: zh
+parameter_rules:
+  - name: project_id
+    label:
+      en_US: Project ID
+      zh_Hans: 项目ID
+    type: string
+    required: true
+    default: ""
+  - name: api_key
+    label:
+      en_US: API Key
+      zh_Hans: API密钥
+    type: secret
+    required: true
+    default: ""
+  - name: easyllm_id
+    label:
+      en_US: EasyLLM ID
+      zh_Hans: EasyLLM ID
+    type: string
+    required: true
+    default: "cosyvoice-v1"
+  - name: streaming
+    label:
+      en_US: Use Streaming API
+      zh_Hans: 使用流式接口
+    type: boolean
+    required: false
+    default: true
+  - name: format
+    label:
+      en_US: Audio Format
+      zh_Hans: 音频格式
+    type: string
+    required: false
+    default: "MP3_16000HZ_MONO_128KBPS"
+    options: [
+      "MP3_16000HZ_MONO_128KBPS",
+      "MP3_24000HZ_MONO_128KBPS",
+      "MP3_48000HZ_MONO_128KBPS",
+      "WAV_16000HZ_MONO_16BIT",
+      "WAV_24000HZ_MONO_16BIT",
+      "WAV_48000HZ_MONO_16BIT"
+    ]
+  - name: volume
+    label:
+      en_US: Volume (0-100)
+      zh_Hans: 音量 (0-100)
+    type: int
+    required: false
+    default: 50
+  - name: speechRate
+    label:
+      en_US: Speech Rate (0.5-2)
+      zh_Hans: 语速 (0.5-2)
+    type: float
+    required: false
+    default: 1.0
+  - name: pitchRate
+    label:
+      en_US: Pitch Rate (0.5-2)
+      zh_Hans: 语调 (0.5-2)
+    type: float
+    required: false
+    default: 1.0
+pricing:
+  input: 0.0
+  output: 0.0
+  unit: 0.000001
+  currency: RMB 

@@ -51,6 +51,9 @@ models:
   speech2text:
     predefined:
       - models/speech2text/*.yaml
+  tts:
+    predefined:
+      - models/tts/*.yaml
 extra:
   python:
     provider_source: provider/sophnet.py
@@ -58,6 +61,7 @@ extra:
       - models/llm/llm.py
       - models/text_embedding/text_embedding.py
       - models/speech2text/speech2text.py
+      - models/tts/tts.py
 model_credential_schema:
   model:
     label:
