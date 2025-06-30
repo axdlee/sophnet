@@ -73,14 +73,14 @@ model_credential_schema:
       en_US: Enter your model name
       zh_Hans: 输入模型名称
   credential_form_schemas:
-    - label:
+    - variable: api_key
+      label:
         en_US: API Key
       placeholder:
         en_US: Enter your API Key
         zh_Hans: 在此输入您的 API Key
       required: true
       type: secret-input
-      variable: api_key
     - variable: project_id
       label:
         en_US: Project ID
@@ -140,6 +140,28 @@ model_credential_schema:
       show_on:
         - value: text-embedding
           variable: __model_type
+    - variable: easyllm_id
+      label:
+        en_US: EasyLLM ID
+      placeholder:
+        en_US: Enter your EasyLLM ID
+        zh_Hans: 在此输入您的 EasyLLM ID
+      type: text-input
+      required: true
+      show_on:
+        - value: speech2text
+          variable: __model_type
+    - variable: easyllm_id
+      label:
+        en_US: EasyLLM ID
+      placeholder:
+        en_US: Enter your EasyLLM ID
+        zh_Hans: 在此输入您的 EasyLLM ID
+      type: text-input
+      required: true
+      show_on:
+        - value: tts
+          variable: __model_type            
     - variable: dimensions
       default: '1024'
       label:
@@ -171,4 +193,146 @@ model_credential_schema:
       required: true
       show_on:
         - value: text-embedding
+          variable: __model_type
+    - variable: streaming
+      default: "true"
+      label:
+        en_US: Use Streaming API
+        zh_Hans: 使用流式接口
+      type: switch
+      required: false
+      show_on:
+        - value: tts
+          variable: __model_type
+    - variable: format
+      default: "MP3_16000HZ_MONO_128KBPS"
+      label:
+        en_US: Audio Format
+        zh_Hans: 音频格式
+      type: select
+      options:
+        - label:
+            en_US: MP3 16kHz
+            zh_Hans: MP3 16kHz
+          value: "MP3_16000HZ_MONO_128KBPS"
+        - label:
+            en_US: MP3 24kHz
+            zh_Hans: MP3 24kHz
+          value: "MP3_24000HZ_MONO_128KBPS"
+        - label:
+            en_US: MP3 48kHz
+            zh_Hans: MP3 48kHz
+          value: "MP3_48000HZ_MONO_128KBPS"
+        - label:
+            en_US: WAV 16kHz
+            zh_Hans: WAV 16kHz
+          value: "WAV_16000HZ_MONO_16BIT"
+        - label:
+            en_US: WAV 24kHz
+            zh_Hans: WAV 24kHz
+          value: "WAV_24000HZ_MONO_16BIT"
+        - label:
+            en_US: WAV 48kHz
+            zh_Hans: WAV 48kHz
+          value: "WAV_48000HZ_MONO_16BIT"
+      required: false
+      show_on:
+        - value: tts
+          variable: __model_type
+    - variable: voice
+      default: "longxiaochun"
+      label:
+        en_US: Voice
+        zh_Hans: 音色
+      type: select
+      options:
+        - label:
+            en_US: 龙小春
+            zh_Hans: 龙小春
+          value: "longxiaochun"
+        - label:
+            en_US: 龙小夏
+            zh_Hans: 龙小夏
+          value: "longxiaoxia"
+        - label:
+            en_US: 龙小成
+            zh_Hans: 龙小成
+          value: "longxiaocheng"
+        - label:
+            en_US: 龙小白
+            zh_Hans: 龙小白
+          value: "longxiaobai"
+        - label:
+            en_US: 龙老铁
+            zh_Hans: 龙老铁
+          value: "longlaotie"
+        - label:
+            en_US: 龙叔
+            zh_Hans: 龙叔
+          value: "longshu"
+        - label:
+            en_US: 龙硕
+            zh_Hans: 龙硕
+          value: "longshuo"
+        - label:
+            en_US: 龙婧
+            zh_Hans: 龙婧
+          value: "longjing"
+        - label:
+            en_US: 龙悦
+            zh_Hans: 龙悦
+          value: "longyue"
+        - label:
+            en_US: 龙湾
+            zh_Hans: 龙湾
+          value: "longwan"
+        - label:
+            en_US: 龙成
+            zh_Hans: 龙成
+          value: "longcheng"
+        - label:
+            en_US: 龙华
+            zh_Hans: 龙华
+          value: "longhua"
+        - label:
+            en_US: Stella (English)
+            zh_Hans: Stella (英文)
+          value: "loongstella"
+        - label:
+            en_US: Bella (English)
+            zh_Hans: Bella (英文)
+          value: "loongbella"
+      required: false
+      show_on:
+        - value: tts
+          variable: __model_type
+    - variable: volume
+      default: '50'
+      label:
+        en_US: Volume (0-100)
+        zh_Hans: 音量 (0-100)
+      type: text-input
+      required: false
+      show_on:
+        - value: tts
+          variable: __model_type
+    - variable: speechRate
+      default: '1.0'
+      label:
+        en_US: Speech Rate (0.5-2)
+        zh_Hans: 语速 (0.5-2)
+      type: text-input
+      required: false
+      show_on:
+        - value: tts
+          variable: __model_type
+    - variable: pitchRate
+      default: '1.0'
+      label:
+        en_US: Pitch Rate (0.5-2)
+        zh_Hans: 语调 (0.5-2)
+      type: text-input
+      required: false
+      show_on:
+        - value: tts
           variable: __model_type
