@@ -47,14 +47,17 @@ models:
     position: models/llm/_position.yaml
   text_embedding:
     predefined:
-      - models/text_embedding/*.yaml   
+      - models/text_embedding/*.yaml
+  speech2text:
+    predefined:
+      - models/speech2text/*.yaml
 extra:
   python:
     provider_source: provider/sophnet.py
     model_sources:
       - models/llm/llm.py
       - models/text_embedding/text_embedding.py
-
+      - models/speech2text/speech2text.py
 model_credential_schema:
   model:
     label:
