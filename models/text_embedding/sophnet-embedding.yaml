@@ -1,5 +1,5 @@
 model: sophnet-embedding
-model_type: text_embedding
+model_type: text-embedding
 label:
   en_US: Sophnet Text Embedding
   zh_Hans: Sophnet 文本向量
