@@ -40,20 +40,20 @@ class SophnetText2SpeechModel(TTSModel):
     DEFAULT_VOICE = "longxiaochun"
     # 支持的音色列表
     SUPPORTED_VOICES = [
-        {"name": "龙小春", "mode": "longxiaochun", "language": "zh"},
-        {"name": "龙小夏", "mode": "longxiaoxia", "language": "zh"},
-        {"name": "龙小成", "mode": "longxiaocheng", "language": "zh"},
-        {"name": "龙小白", "mode": "longxiaobai", "language": "zh"},
-        {"name": "龙老铁", "mode": "longlaotie", "language": "zh"},
-        {"name": "龙叔", "mode": "longshu", "language": "zh"},
-        {"name": "龙硕", "mode": "longshuo", "language": "zh"},
-        {"name": "龙婧", "mode": "longjing", "language": "zh"},
-        {"name": "龙悦", "mode": "longyue", "language": "zh"},
-        {"name": "龙湾", "mode": "longwan", "language": "zh"},
-        {"name": "龙成", "mode": "longcheng", "language": "zh"},
-        {"name": "龙华", "mode": "longhua", "language": "zh"},
-        {"name": "Stella", "mode": "loongstella", "language": "en"},
-        {"name": "Bella", "mode": "loongbella", "language": "en"},
+        {"name": "龙小春", "mode": "longxiaochun", "language": "zh-Hans"},
+        {"name": "龙小夏", "mode": "longxiaoxia", "language": "zh-Hans"},
+        {"name": "龙小成", "mode": "longxiaocheng", "language": "zh-Hans"},
+        {"name": "龙小白", "mode": "longxiaobai", "language": "zh-Hans"},
+        {"name": "龙老铁", "mode": "longlaotie", "language": "zh-Hans"},
+        {"name": "龙叔", "mode": "longshu", "language": "zh-Hans"},
+        {"name": "龙硕", "mode": "longshuo", "language": "zh-Hans"},
+        {"name": "龙婧", "mode": "longjing", "language": "zh-Hans"},
+        {"name": "龙悦", "mode": "longyue", "language": "zh-Hans"},
+        {"name": "龙湾", "mode": "longwan", "language": "zh-Hans"},
+        {"name": "龙成", "mode": "longcheng", "language": "zh-Hans"},
+        {"name": "龙华", "mode": "longhua", "language": "zh-Hans"},
+        {"name": "Stella", "mode": "loongstella", "language": "en-US"},
+        {"name": "Bella", "mode": "loongbella", "language": "en-US"},
     ]
     # 支持的格式列表
     SUPPORTED_FORMATS = [

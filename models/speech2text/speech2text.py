@@ -1,6 +1,8 @@
 import time
 from typing import IO, Optional
 import requests
+import os
+import pathlib
 
 from dify_plugin.errors.model import (
     CredentialsValidateFailedError,
@@ -43,6 +45,7 @@ class SophnetSpeech2TextModel(Speech2TextModel):
         url, headers, easyllm_id = self._build_request_params(credentials, model)
         
         # 准备表单数据
+        # 根据API文档，data字段必须为JSON字符串，并指定content-type为application/json
         files = {
             'audio_file': file,
             'data': (None, f'{{"easyllm_id": "{easyllm_id}"}}', 'application/json')
@@ -50,18 +53,19 @@ class SophnetSpeech2TextModel(Speech2TextModel):
         
         # 设置multipart/form-data请求头
         request_headers = headers.copy()
-        request_headers['Content-Type'] = 'multipart/form-data'
+        # 当使用files参数时，requests会自动设置正确的Content-Type和boundary
+        # 不需要手动设置'Content-Type': 'multipart/form-data'
         
         # 创建转录任务
         try:
-            response = requests.post(url, headers=headers, files=files, timeout=600)
+            response = requests.post(url, headers=request_headers, files=files, timeout=600)
             response.raise_for_status()
             task_data = response.json()
             
-            if 'taskId' not in task_data:
+            if 'task_id' not in task_data:
                 raise InvokeBadRequestError(f"Failed to create transcription task: {response.text}")
             
-            task_id = task_data['taskId']
+            task_id = task_data['task_id']
             
             # 轮询获取结果
             return self._poll_task_result(credentials, task_id)
@@ -157,12 +161,15 @@ class SophnetSpeech2TextModel(Speech2TextModel):
             with open(audio_file_path, "rb") as audio_file:
                 # 尝试调用API但不等待完整结果
                 url, headers, _ = self._build_request_params(credentials, model)
+                # 确保格式与API文档一致
                 files = {
                     'audio_file': audio_file,
                     'data': (None, f'{{"easyllm_id": "{easyllm_id}"}}', 'application/json')
                 }
                 
-                response = requests.post(url, headers=headers, files=files, timeout=30)
+                # 使用request_headers而不是headers
+                request_headers = headers.copy()
+                response = requests.post(url, headers=request_headers, files=files, timeout=30)
                 if response.status_code != 200:
                     raise CredentialsValidateFailedError(
                         f"Credentials validation failed with status code {response.status_code}: {response.text}"
@@ -170,13 +177,15 @@ class SophnetSpeech2TextModel(Speech2TextModel):
                 
                 # 检查返回的任务ID
                 data = response.json()
-                if 'taskId' not in data:
-                    raise CredentialsValidateFailedError("Invalid API response: no taskId returned")
+                if 'task_id' not in data:
+                    raise CredentialsValidateFailedError("Invalid API response: no task_id returned")
                 
         except Exception as ex:
             if isinstance(ex, CredentialsValidateFailedError):
                 raise ex
             raise CredentialsValidateFailedError(str(ex)) from ex
+        finally:
+            os.remove(audio_file_path)
     
     def get_customizable_model_schema(self, model: str, credentials: dict) -> AIModelEntity:
         """
@@ -242,3 +251,45 @@ class SophnetSpeech2TextModel(Speech2TextModel):
             CredentialsValidateFailedError: [CredentialsValidateFailedError],
             InvokeError: [Exception],
         }
+        
+    def _get_demo_file_path(self) -> str:
+        """
+        返回用于验证凭证的示例音频文件路径
+        如果文件不存在，则创建一个空的音频文件
+        
+        :return: 音频文件路径
+        """
+        # 获取当前文件所在目录
+        current_dir = pathlib.Path(__file__).parent.absolute()
+        
+        # 创建测试文件目录
+        test_dir = current_dir / "test_data"
+        os.makedirs(test_dir, exist_ok=True)
+        
+        # 测试音频文件路径
+        test_file = test_dir / "test_audio.wav"
+        
+        # 如果文件不存在，创建一个空的WAV文件
+        if not test_file.exists():
+            # 创建一个最小化的WAV文件头
+            with open(test_file, "wb") as f:
+                # RIFF header
+                f.write(b"RIFF")  # ChunkID
+                f.write(b"\x24\x00\x00\x00")  # ChunkSize (36 + SubChunk2Size)
+                f.write(b"WAVE")  # Format
+                
+                # fmt subchunk
+                f.write(b"fmt ")  # Subchunk1ID
+                f.write(b"\x10\x00\x00\x00")  # Subchunk1Size (16 for PCM)
+                f.write(b"\x01\x00")  # AudioFormat (1 for PCM)
+                f.write(b"\x01\x00")  # NumChannels (1 for mono)
+                f.write(b"\x44\xAC\x00\x00")  # SampleRate (44100)
+                f.write(b"\x88\x58\x01\x00")  # ByteRate (SampleRate * NumChannels * BitsPerSample/8)
+                f.write(b"\x02\x00")  # BlockAlign (NumChannels * BitsPerSample/8)
+                f.write(b"\x10\x00")  # BitsPerSample (16)
+                
+                # data subchunk
+                f.write(b"data")  # Subchunk2ID
+                f.write(b"\x00\x00\x00\x00")  # Subchunk2Size (0 for empty audio)
+        
+        return str(test_file)
