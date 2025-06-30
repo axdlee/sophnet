@@ -1,0 +1,29 @@
+model: sophnet-embedding
+model_type: text_embedding
+label:
+  en_US: Sophnet Text Embedding
+  zh_Hans: Sophnet 文本向量
+model_properties:
+  context_size: 8192
+  max_chunks: 10
+parameter_rules:
+  - name: easyllm_id
+    label:
+      en_US: EasyLLM ID
+      zh_Hans: EasyLLM ID
+    type: string
+    required: true
+    default: ""
+  - name: dimensions
+    label:
+      en_US: Embedding Dimensions, support 1,024/768/512/256/128/64
+      zh_Hans: 输出Embeddings的维度，支持1,024/768/512/256/128/64
+    type: int
+    required: true
+    default: 1024
+    options: [1024, 768, 512, 256, 128, 64]
+pricing:
+  input: 0.5
+  output: 0.0
+  unit: 0.000001
+  currency: RMB 
