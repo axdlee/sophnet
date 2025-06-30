@@ -16,6 +16,7 @@ from dify_plugin.entities.model import (
 from dify_plugin.errors.model import (
     CredentialsValidateFailedError,
     InvokeBadRequestError,
+    InvokeError,
 )
 from dify_plugin.interfaces.model.tts_model import TTSModel
 
@@ -360,3 +361,11 @@ class SophnetText2SpeechModel(TTSModel):
         }
         
         return url, headers, payload
+    
+    @property
+    def _invoke_error_mapping(self) -> dict:
+        return {
+            InvokeBadRequestError: [InvokeBadRequestError],
+            CredentialsValidateFailedError: [CredentialsValidateFailedError],
+            InvokeError: [Exception],
+        }

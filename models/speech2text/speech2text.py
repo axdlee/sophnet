@@ -5,6 +5,7 @@ import requests
 from dify_plugin.errors.model import (
     CredentialsValidateFailedError,
     InvokeBadRequestError,
+    InvokeError,
 )
 from dify_plugin.interfaces.model.speech2text_model import Speech2TextModel
 from dify_plugin.entities import I18nObject
@@ -232,3 +233,12 @@ class SophnetSpeech2TextModel(Speech2TextModel):
         }
         
         return url, headers, easyllm_id
+
+    @property
+    def _invoke_error_mapping(self) -> dict:
+        # 只需简单映射即可
+        return {
+            InvokeBadRequestError: [InvokeBadRequestError],
+            CredentialsValidateFailedError: [CredentialsValidateFailedError],
+            InvokeError: [Exception],
+        }
