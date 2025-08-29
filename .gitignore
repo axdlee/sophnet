@@ -169,6 +169,10 @@ cython_debug/
 
 # Vscode
 .vscode/
+.claude/
+.cursor/
+.kilocode/
+.qoder/
 
 # macOS
 .DS_Store
