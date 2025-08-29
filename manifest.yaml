@@ -16,7 +16,7 @@ meta:
     version: "3.12"
     entrypoint: main
   minimum_dify_version: null
-  version: 0.0.3
+  version: 0.0.4
 name: sophnet
 plugins:
   models:
@@ -35,7 +35,7 @@ resource:
     tool:
       enabled: true
 type: plugin
-version: 0.0.3
+version: 0.0.4
 privacy: PRIVACY.md
 repo: https://github.com/axdlee/sophnet
 verified: false
