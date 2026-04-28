@@ -178,3 +178,5 @@ cython_debug/
 .DS_Store
 .AppleDouble
 .LSOverride
+.ace-tool/
+.playwright-mcp/

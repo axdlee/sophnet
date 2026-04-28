@@ -1,0 +1,29 @@
+model: Kimi-K2.6
+label:
+  zh_Hans: Kimi-K2.6
+  en_US: Kimi-K2.6
+model_type: llm
+features:
+  - vision
+  - agent-thought
+model_properties:
+  mode: chat
+  context_size: 256000
+parameter_rules:
+  - name: max_tokens
+    use_template: max_tokens
+    min: 1
+    max: 48000
+    default: 8192
+  - name: temperature
+    use_template: temperature
+    default: 0.6
+  - name: top_p
+    use_template: top_p
+  - name: presence_penalty
+    use_template: presence_penalty
+pricing:
+  input: '6.5'
+  output: '27'
+  unit: '0.000001'
+  currency: RMB

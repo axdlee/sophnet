@@ -1,0 +1,30 @@
+model: MiniMax-M2.7
+label:
+  zh_Hans: MiniMax-M2.7
+  en_US: MiniMax-M2.7
+model_type: llm
+features:
+  - tool-call
+  - stream-tool-call
+  - agent-thought
+model_properties:
+  mode: chat
+  context_size: 200000
+parameter_rules:
+  - name: max_tokens
+    use_template: max_tokens
+    min: 1
+    max: 16384
+    default: 8192
+  - name: temperature
+    use_template: temperature
+    default: 0.6
+  - name: top_p
+    use_template: top_p
+  - name: presence_penalty
+    use_template: presence_penalty
+pricing:
+  input: '2.1'
+  output: '8.4'
+  unit: '0.000001'
+  currency: RMB

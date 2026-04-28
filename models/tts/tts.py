@@ -117,7 +117,7 @@ class SophnetText2SpeechModel(TTSModel):
         :return: 音频数据流
         """
         url, headers, payload = self._build_request_params(
-            credentials, sentences, voice, True
+            credentials, model, sentences, voice, True
         )
         
         try:
@@ -156,7 +156,7 @@ class SophnetText2SpeechModel(TTSModel):
         :return: 音频数据
         """
         url, headers, payload = self._build_request_params(
-            credentials, sentences, voice, False
+            credentials, model, sentences, voice, False
         )
         
         try:
@@ -194,7 +194,7 @@ class SophnetText2SpeechModel(TTSModel):
             
             # 构建请求参数
             url, headers, payload = self._build_request_params(
-                credentials, test_text, self.DEFAULT_VOICE, False
+                credentials, model, test_text, self.DEFAULT_VOICE, False
             )
             
             # 发送请求验证
@@ -300,12 +300,13 @@ class SophnetText2SpeechModel(TTSModel):
         return entity
 
     def _build_request_params(
-        self, credentials: dict, texts: List[str], voice: str, streaming: bool
+        self, credentials: dict, model: str, texts: List[str], voice: str, streaming: bool
     ) -> tuple:
         """
         构建请求参数
 
         :param credentials: 凭证信息
+        :param model: 模型名称
         :param texts: 文本列表
         :param voice: 音色
         :param streaming: 是否使用流式接口
@@ -319,7 +320,7 @@ class SophnetText2SpeechModel(TTSModel):
         if not api_key:
             raise ValueError("api_key is required")
         
-        easyllm_id = credentials.get("easyllm_id")
+        easyllm_id = credentials.get("easyllm_id", model)
         if not easyllm_id:
             raise ValueError("easyllm_id is required")
         
@@ -337,7 +338,7 @@ class SophnetText2SpeechModel(TTSModel):
         
         # 构建请求体
         synthesis_param = {
-            "model": credentials.get("model", self.DEFAULT_MODEL),
+            "model": credentials.get("model", model or self.DEFAULT_MODEL),
             "voice": voice,
         }
         

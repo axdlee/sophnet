@@ -1,0 +1,13 @@
+model: clip-embeddings
+label:
+  zh_Hans: clip-embeddings
+  en_US: clip-embeddings
+model_type: text-embedding
+model_properties:
+  context_size: 8192
+  max_chunks: 10
+pricing:
+  input: '0.5'
+  output: '0'
+  unit: '0.000001'
+  currency: RMB

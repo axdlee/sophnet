@@ -1,0 +1,8 @@
+model: Paraformer
+label:
+  zh_Hans: Paraformer
+  en_US: Paraformer
+model_type: speech2text
+model_properties:
+  file_upload_limit: 1024
+  supported_file_extensions: wav,mp3,m4a,flv,mp4,wma,3gp,amr,aac,ogg-opus,flac
