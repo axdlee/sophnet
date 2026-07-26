@@ -1,8 +1,8 @@
 author: axdlee
 created_at: 2025-06-13T10:25:38.28013+08:00
 description:
-  en_US: SophNet provides full-blood DeepSeek R1/V3, Qwen, QwQ models, and its own DeepSeek V3 Fast model, as well as text-to-speech, image OCR, document parsing, and other models.
-  zh_Hans: SophNet 提供满血版 DeepSeek R1/V3，Qwen, QwQ 模型，以及其独有的 DeepSeek V3 Fast 模型, 此外还提供文字转语音，图片OCR， 文档解析等模型。
+  en_US: SophNet provides DeepSeek V4, GLM, Kimi, MiniMax, Qwen, embedding, speech-to-text, and text-to-speech models.
+  zh_Hans: SophNet 提供 DeepSeek V4、GLM、Kimi、MiniMax、Qwen、向量、语音转文本和文本转语音模型。
 icon: icon.svg
 label:
   en_US: SophNet
@@ -16,7 +16,7 @@ meta:
     version: "3.12"
     entrypoint: main
   minimum_dify_version: null
-  version: 0.0.6
+  version: 0.0.7
 name: sophnet
 plugins:
   models:
@@ -29,13 +29,13 @@ resource:
       llm: true
       moderation: false
       rerank: false
-      speech2text: false
-      text_embedding: false
-      tts: false
+      speech2text: true
+      text_embedding: true
+      tts: true
     tool:
-      enabled: true
+      enabled: false
 type: plugin
-version: 0.0.6
+version: 0.0.7
 privacy: PRIVACY.md
 repo: https://github.com/axdlee/sophnet
 verified: false

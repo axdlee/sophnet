@@ -7,6 +7,7 @@ features:
   - tool-call
   - stream-tool-call
   - vision
+  - structured-output
   - agent-thought
 model_properties:
   mode: chat

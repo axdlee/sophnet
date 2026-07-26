@@ -3,8 +3,8 @@ label:
   en_US: SophNet
   zh_Hans: SophNet 算能
 description:
-  en_US: SophNet provides full-blood DeepSeek R1/V3, Qwen, QwQ models, and its own DeepSeek V3 Fast model, as well as text-to-speech, image OCR, document parsing, and other models.
-  zh_Hans: SophNet 提供满血版 DeepSeek R1/V3，Qwen, QwQ 模型，以及其独有的 DeepSeek V3 Fast 模型, 此外还提供文字转语音，图片OCR， 文档解析等模型。
+  en_US: SophNet provides DeepSeek V4, GLM, Kimi, MiniMax, Qwen, embedding, speech-to-text, and text-to-speech models.
+  zh_Hans: SophNet 提供 DeepSeek V4、GLM、Kimi、MiniMax、Qwen、向量、语音转文本和文本转语音模型。
 icon_large:
   en_US: icon.svg
 icon_small:
@@ -123,7 +123,7 @@ model_credential_schema:
         - label:
             en_US: Support
             zh_Hans: 支持
-          value: function_call
+          value: tool_call
       required: false
       show_on:
         - value: llm
@@ -140,28 +140,40 @@ model_credential_schema:
       show_on:
         - value: text-embedding
           variable: __model_type
-    - variable: easyllm_id
-      label:
-        en_US: EasyLLM ID
-      placeholder:
-        en_US: Enter your EasyLLM ID
-        zh_Hans: 在此输入您的 EasyLLM ID
-      type: text-input
-      required: true
-      show_on:
         - value: speech2text
           variable: __model_type
-    - variable: easyllm_id
-      label:
-        en_US: EasyLLM ID
-      placeholder:
-        en_US: Enter your EasyLLM ID
-        zh_Hans: 在此输入您的 EasyLLM ID
-      type: text-input
-      required: true
-      show_on:
         - value: tts
-          variable: __model_type            
+          variable: __model_type
+    - variable: vision
+      default: "false"
+      label:
+        en_US: Vision input
+        zh_Hans: 图像输入
+      type: switch
+      required: false
+      show_on:
+        - value: llm
+          variable: __model_type
+    - variable: video
+      default: "false"
+      label:
+        en_US: Video input
+        zh_Hans: 视频输入
+      type: switch
+      required: false
+      show_on:
+        - value: llm
+          variable: __model_type
+    - variable: structured_output
+      default: "false"
+      label:
+        en_US: Structured output
+        zh_Hans: 结构化输出
+      type: switch
+      required: false
+      show_on:
+        - value: llm
+          variable: __model_type
     - variable: dimensions
       default: '1024'
       label:

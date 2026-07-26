@@ -1,0 +1,30 @@
+model: MiniMax-M3
+label:
+  zh_Hans: MiniMax-M3
+  en_US: MiniMax-M3
+model_type: llm
+features:
+  - tool-call
+  - stream-tool-call
+  - vision
+  - video
+  - agent-thought
+model_properties:
+  mode: chat
+  context_size: 512000
+parameter_rules:
+  - name: max_tokens
+    use_template: max_tokens
+    min: 1
+    max: 48000
+    default: 8192
+  - name: temperature
+    use_template: temperature
+    default: 0.6
+  - name: top_p
+    use_template: top_p
+pricing:
+  input: '4.2'
+  output: '16.8'
+  unit: '0.000001'
+  currency: RMB

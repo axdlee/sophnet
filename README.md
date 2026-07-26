@@ -1,75 +1,37 @@
-# Sophnet
+# SophNet
 
-SophNet provides full-blood DeepSeek R1/V3, Qwen, QwQ models, and its own DeepSeek V3 Fast model, as well as text-to-speech, speech-to-text, text embedding, image OCR, document parsing, and other models.
-
----
+SophNet model provider plugin for Dify. It exposes the models enabled in your SophNet project through Dify's model management interface.
 
 ## Configure
 
-After installing the plugin, configure your Sophnet settings in the Model Provider section. This includes your API key ([find it here](https://www.sophnet.com/#/project/key)) and Project ID. Save to use Sophnet.
-![CONFIG](./_assets/01.png)
-![CONFIG DONE](./_assets/02.png)
----
+Install the plugin, then add your SophNet API Key and Project ID in **Settings > Model Provider > SophNet**. You can create an API key from the [SophNet project console](https://www.sophnet.com/#/project/key).
 
-## Features
+![SophNet configuration](./_assets/01.png)
+![SophNet configured](./_assets/02.png)
 
-### Large Language Models (LLM)
-- Full access to DeepSeek R1/V3, Qwen, QwQ models
-- Customizable parameters for each model
-- Support for both chat and completion APIs
+## Supported capabilities
 
-### Speech to Text
-- Convert audio files to text transcriptions
-- Support for multiple audio formats: wav, mp3, m4a, flv, mp4, wma, 3gp, amr, aac, ogg-opus, flac
-- File size limit: 1GB
-- Audio duration: up to 5 hours
+- Large language models: DeepSeek V4, GLM, Kimi, MiniMax, Qwen and retained legacy models
+- Tool calling, structured output, image, video and audio input where the selected model supports them
+- Text embeddings: `text-embeddings`, `clip-embeddings` and `bge-m3`
+- Speech to text through a SophNet EasyLLM service
+- Text to speech through a SophNet EasyLLM service, including streaming output
+- Predefined models and customizable EasyLLM deployments
 
-### Text to Speech (TTS)
-- Convert text to natural-sounding speech
-- 14 different voice options in Chinese and English
-- Adjustable parameters: volume, speech rate, pitch
-- Streaming and non-streaming API support
-- Multiple output audio formats
+Existing model identifiers remain available so applications created with earlier plugin versions continue to resolve their configured models.
 
-### Text Embedding
-- Generate vector embeddings for text
-- Configurable dimensions: 1024/768/512/256/128/64
-- Optimized for semantic search and text analysis
+## Links
 
----
-
-## About Sophnet
-Website [Sophnet](https://www.sophnet.com/)
-Supported Models  [Models](https://www.sophnet.com/#/model/list)
-Sophnet API Document [API](https://www.sophnet.com/docs/component/API.html)
-
----
-
-## Documentation
-
-- See [GUIDE.md](./GUIDE.md) for detailed usage, customization, and contribution instructions.
-- Refer to code comments and docstrings for in-line documentation.
-
----
+- [SophNet website](https://www.sophnet.com/)
+- [SophNet model catalog](https://www.sophnet.com/#/model/list)
+- [Source code and issue tracker](https://github.com/axdlee/sophnet)
+- [Plugin development guide](./GUIDE.md)
+- [Privacy policy](./PRIVACY.md)
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
-
----
-
-## Privacy
-
-For information on data handling and privacy, please refer to [PRIVACY.md](./PRIVACY.md).
-
----
-
-## Contributing
-
-Contributions are welcome! Please read [GUIDE.md](./GUIDE.md) for guidelines on how to get started.
-
----
+This project is licensed under the [MIT License](./LICENSE).
 
 ## Contact
 
-For questions, issues, or feature requests, please open an issue on GitHub or contact the maintainers.
+For questions, compatibility reports, or feature requests, open an issue in the [source repository](https://github.com/axdlee/sophnet/issues).

@@ -1,15 +1,12 @@
-import time
-from typing import IO, Optional
-import requests
+import json
 import os
-import pathlib
+import tempfile
+import time
+import wave
+from collections.abc import Mapping
+from typing import IO, Any
 
-from dify_plugin.errors.model import (
-    CredentialsValidateFailedError,
-    InvokeBadRequestError,
-    InvokeError,
-)
-from dify_plugin.interfaces.model.speech2text_model import Speech2TextModel
+import requests
 from dify_plugin.entities import I18nObject
 from dify_plugin.entities.model import (
     AIModelEntity,
@@ -20,185 +17,160 @@ from dify_plugin.entities.model import (
     ParameterType,
     PriceConfig,
 )
+from dify_plugin.errors.model import (
+    CredentialsValidateFailedError,
+    InvokeBadRequestError,
+    InvokeConnectionError,
+    InvokeError,
+)
+from dify_plugin.interfaces.model.speech2text_model import Speech2TextModel
 
 
 class SophnetSpeech2TextModel(Speech2TextModel):
-    """
-    Model class for Sophnet Speech to text model.
-    
-    支持音频格式：wav、mp3、m4a、flv、mp4、wma、3gp、amr、aac、ogg-opus、flac
-    音频限制：音频时长不能大于5小时，文件大小不超过1GB
-    识别有效时间：识别结果在服务端保存24小时
-    """
+    """SophNet asynchronous speech-to-text model."""
 
-    def _invoke(self, model: str, credentials: dict, file: IO[bytes], user: Optional[str] = None) -> str:
-        """
-        Invoke speech2text model
-
-        :param model: model name
-        :param credentials: model credentials
-        :param file: audio file
-        :param user: unique user id
-        :return: text for given audio file
-        """
-        # 构建请求参数
+    def _invoke(
+        self,
+        model: str,
+        credentials: dict,
+        file: IO[bytes],
+        user: str | None = None,
+    ) -> str:
+        del user
         url, headers, easyllm_id = self._build_request_params(credentials, model)
-        
-        # 准备表单数据
-        # 根据API文档，data字段必须为JSON字符串，并指定content-type为application/json
-        files = {
-            'audio_file': file,
-            'data': (None, f'{{"easyllm_id": "{easyllm_id}"}}', 'application/json')
-        }
-        
-        # 设置multipart/form-data请求头
-        request_headers = headers.copy()
-        # 当使用files参数时，requests会自动设置正确的Content-Type和boundary
-        # 不需要手动设置'Content-Type': 'multipart/form-data'
-        
-        # 创建转录任务
+        files = self._multipart_files(file, easyllm_id)
+        response: requests.Response | None = None
         try:
-            response = requests.post(url, headers=request_headers, files=files, timeout=600)
+            response = requests.post(url, headers=headers, files=files, timeout=600)
             response.raise_for_status()
             task_data = response.json()
-            
-            if 'task_id' not in task_data:
-                raise InvokeBadRequestError(f"Failed to create transcription task: {response.text}")
-            
-            task_id = task_data['task_id']
-            
-            # 轮询获取结果
-            return self._poll_task_result(credentials, task_id)
-            
-        except Exception as e:
-            raise InvokeBadRequestError(f"Sophnet speech2text API call failed: {e}")
+        except requests.RequestException as ex:
+            raise InvokeConnectionError("SophNet speech-to-text request failed") from ex
+        except ValueError as ex:
+            raise InvokeBadRequestError("SophNet speech-to-text API returned invalid JSON") from ex
+        finally:
+            if response is not None:
+                response.close()
 
-    def _poll_task_result(self, credentials: dict, task_id: str, max_retries: int = 60, interval: int = 5) -> str:
-        """
-        轮询获取转录任务结果
-        
-        任务状态说明：
-        - waiting: 任务等待中
-        - doing: 任务执行中
-        - success: 任务成功
-        - failed: 任务失败
-        
-        :param credentials: 凭证信息
-        :param task_id: 任务ID
-        :param max_retries: 最大重试次数
-        :param interval: 轮询间隔(秒)
-        :return: 转录文本结果
-        """
+        task_id = task_data.get("task_id") if isinstance(task_data, dict) else None
+        if not task_id:
+            raise InvokeBadRequestError("SophNet speech-to-text API did not return a task_id")
+        return self._poll_task_result(credentials, str(task_id))
+
+    def _poll_task_result(
+        self,
+        credentials: dict,
+        task_id: str,
+        max_retries: int = 60,
+        interval: int = 5,
+    ) -> str:
         project_id = credentials.get("project_id")
         api_key = credentials.get("api_key")
-        
-        url = f"https://www.sophnet.com/api/open-apis/projects/{project_id}/easyllms/speechtotext/transcriptions/{task_id}"
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        for retry in range(max_retries):
-            try:
-                response = requests.get(url, headers=headers, timeout=30)
-                response.raise_for_status()
-                data = response.json()
-                
-                status = data.get("status", "")
-                
-                if status == "success":
-                    return data.get("result", "")
-                elif status == "failed":
-                    error_msg = data.get("errorMsg", "Unknown error")
-                    raise InvokeBadRequestError(f"Transcription failed: {error_msg}")
-                elif status == "waiting":
-                    # 任务等待中，继续等待
-                    pass
-                elif status == "doing":
-                    # 任务执行中，继续等待
-                    pass
-                else:
-                    # 未知状态
-                    raise InvokeBadRequestError(f"Unknown task status: {status}")
-                
-                # 如果任务仍在进行中，等待后重试
-                time.sleep(interval)
-                
-                # 对于较长音频，适当增加等待时间
-                if retry > 10 and interval < 15:
-                    interval = min(interval + 1, 15)  # 逐渐增加等待时间，但不超过15秒
-                
-            except Exception as e:
-                if isinstance(e, InvokeBadRequestError):
-                    raise e
-                raise InvokeBadRequestError(f"Failed to get transcription result: {e}")
-        
-        raise InvokeBadRequestError(f"Transcription task {task_id} timed out after {max_retries * interval} seconds")
+        if not project_id or not api_key:
+            raise InvokeBadRequestError("project_id and api_key are required")
 
-    def validate_credentials(self, model: str, credentials: dict) -> None:
-        """
-        验证凭证有效性
-        
-        :param model: 模型名称
-        :param credentials: 凭证信息
-        """
+        url = (
+            f"https://www.sophnet.com/api/open-apis/projects/{project_id}"
+            f"/easyllms/speechtotext/transcriptions/{task_id}"
+        )
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        current_interval = interval
+
+        for retry in range(max_retries):
+            data = self._get_task(url, headers)
+            status = data.get("status")
+            if status == "success":
+                result = data.get("result")
+                return result if isinstance(result, str) else ""
+            if status == "failed":
+                message = data.get("errorMsg") or "Unknown error"
+                raise InvokeBadRequestError(f"SophNet transcription failed: {message}")
+            if status not in {"waiting", "doing"}:
+                raise InvokeBadRequestError(f"Unknown SophNet transcription status: {status}")
+
+            if retry + 1 < max_retries:
+                time.sleep(current_interval)
+                if retry >= 10:
+                    current_interval = min(current_interval + 1, 15)
+
+        raise InvokeBadRequestError(
+            f"SophNet transcription task {task_id} timed out after {max_retries} attempts"
+        )
+
+    @staticmethod
+    def _get_task(url: str, headers: dict[str, str]) -> dict[str, Any]:
+        response: requests.Response | None = None
         try:
-            # 验证必要参数
-            project_id = credentials.get("project_id")
-            api_key = credentials.get("api_key")
-            easyllm_id = credentials.get("easyllm_id", model)
-            
-            if not project_id:
-                raise CredentialsValidateFailedError("project_id is required")
-            if not api_key:
-                raise CredentialsValidateFailedError("api_key is required")
-            if not easyllm_id:
-                raise CredentialsValidateFailedError("easyllm_id is required")
-            
-            # 使用简短的音频文件进行验证
-            audio_file_path = self._get_demo_file_path()
-            
-            with open(audio_file_path, "rb") as audio_file:
-                # 尝试调用API但不等待完整结果
-                url, headers, _ = self._build_request_params(credentials, model)
-                # 确保格式与API文档一致
-                files = {
-                    'audio_file': audio_file,
-                    'data': (None, f'{{"easyllm_id": "{easyllm_id}"}}', 'application/json')
-                }
-                
-                # 使用request_headers而不是headers
-                request_headers = headers.copy()
-                response = requests.post(url, headers=request_headers, files=files, timeout=30)
-                if response.status_code != 200:
-                    raise CredentialsValidateFailedError(
-                        f"Credentials validation failed with status code {response.status_code}: {response.text}"
-                    )
-                
-                # 检查返回的任务ID
-                data = response.json()
-                if 'task_id' not in data:
-                    raise CredentialsValidateFailedError("Invalid API response: no task_id returned")
-                
-        except Exception as ex:
-            if isinstance(ex, CredentialsValidateFailedError):
-                raise ex
-            raise CredentialsValidateFailedError(str(ex)) from ex
+            response = requests.get(url, headers=headers, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+        except requests.RequestException as ex:
+            raise InvokeConnectionError("Failed to query SophNet transcription task") from ex
+        except ValueError as ex:
+            raise InvokeBadRequestError("SophNet transcription API returned invalid JSON") from ex
         finally:
-            os.remove(audio_file_path)
-    
+            if response is not None:
+                response.close()
+        if not isinstance(data, dict):
+            raise InvokeBadRequestError("SophNet transcription API returned an invalid response")
+        return data
+
+    def validate_credentials(self, model: str, credentials: Mapping) -> None:
+        audio_file_path: str | None = None
+        try:
+            url, headers, easyllm_id = self._build_request_params(dict(credentials), model)
+        except ValueError as ex:
+            raise CredentialsValidateFailedError(str(ex)) from ex
+        try:
+            audio_file_path = self._create_validation_audio()
+            with open(audio_file_path, "rb") as audio_file:
+                response = requests.post(
+                    url,
+                    headers=headers,
+                    files=self._multipart_files(audio_file, easyllm_id),
+                    timeout=30,
+                )
+                try:
+                    response.raise_for_status()
+                    data = response.json()
+                finally:
+                    response.close()
+            if not isinstance(data, dict) or not data.get("task_id"):
+                raise CredentialsValidateFailedError(
+                    "SophNet speech-to-text validation did not return a task_id"
+                )
+        except CredentialsValidateFailedError:
+            raise
+        except requests.RequestException as ex:
+            raise CredentialsValidateFailedError(
+                "SophNet speech-to-text credentials validation request failed"
+            ) from ex
+        except Exception as ex:
+            raise CredentialsValidateFailedError(
+                "SophNet speech-to-text credentials validation failed"
+            ) from ex
+        finally:
+            if audio_file_path:
+                try:
+                    os.unlink(audio_file_path)
+                except FileNotFoundError:
+                    pass
+
     def get_customizable_model_schema(self, model: str, credentials: dict) -> AIModelEntity:
-        """
-        提供可定制的模型配置，支持project_id、api_key、easyllm_id等参数配置
-        """
-        entity = AIModelEntity(
+        del credentials
+        return AIModelEntity(
             model=model,
-            label=I18nObject(en_US=f"Sophnet Speech to Text ({model})", zh_Hans=f"Sophnet 语音转文本 ({model})"),
+            label=I18nObject(
+                en_US=f"SophNet Speech to Text ({model})",
+                zh_Hans=f"SophNet 语音转文本 ({model})",
+            ),
             model_type=ModelType.SPEECH2TEXT,
             fetch_from=FetchFrom.CUSTOMIZABLE_MODEL,
             model_properties={
-                ModelPropertyKey.FILE_UPLOAD_LIMIT: 1024,  # 1GB 限制
-                ModelPropertyKey.SUPPORTED_FILE_EXTENSIONS: "wav,mp3,m4a,flv,mp4,wma,3gp,amr,aac,ogg-opus,flac",
+                ModelPropertyKey.FILE_UPLOAD_LIMIT: 1024,
+                ModelPropertyKey.SUPPORTED_FILE_EXTENSIONS: (
+                    "wav,mp3,m4a,flv,mp4,wma,3gp,amr,aac,ogg-opus,flac"
+                ),
             },
             parameter_rules=[
                 ParameterRule(
@@ -206,90 +178,61 @@ class SophnetSpeech2TextModel(Speech2TextModel):
                     label=I18nObject(en_US="EasyLLM ID", zh_Hans="EasyLLM ID"),
                     type=ParameterType.STRING,
                     required=True,
-                    default=model
-                ),
+                    default=model,
+                )
             ],
-            pricing=PriceConfig(
-                input=0.0,  # 1.2元/小时
-                output=0.0, # 暂不收费，后续根据实际使用情况调整
-                unit=0.000001,
-                currency="RMB"
-            ),
+            pricing=PriceConfig(input=0.0, output=0.0, unit=0.000001, currency="RMB"),
         )
-        return entity
 
-    def _build_request_params(self, credentials: dict, model: str):
-        """
-        构建请求参数
-        
-        :param credentials: 凭证信息
-        :param model: 模型名称
-        :return: url, headers, easyllm_id
-        """
+    @staticmethod
+    def _multipart_files(file: IO[bytes], easyllm_id: str) -> dict[str, Any]:
+        return {
+            "audio_file": file,
+            "data": (
+                None,
+                json.dumps({"easyllm_id": easyllm_id}),
+                "application/json",
+            ),
+        }
+
+    @staticmethod
+    def _build_request_params(credentials: Mapping, model: str) -> tuple[str, dict[str, str], str]:
         project_id = credentials.get("project_id")
+        api_key = credentials.get("api_key")
+        easyllm_id = credentials.get("easyllm_id") or model
         if not project_id:
             raise ValueError("project_id is required")
-        
-        api_key = credentials.get("api_key")
         if not api_key:
             raise ValueError("api_key is required")
-        
-        easyllm_id = credentials.get("easyllm_id", model)
-        
-        url = f"https://www.sophnet.com/api/open-apis/projects/{project_id}/easyllms/speechtotext/transcriptions"
-        headers = {
-            "Authorization": f"Bearer {api_key}"
-        }
-        
-        return url, headers, easyllm_id
+        if not easyllm_id:
+            raise ValueError("easyllm_id is required")
+
+        url = (
+            f"https://www.sophnet.com/api/open-apis/projects/{project_id}"
+            "/easyllms/speechtotext/transcriptions"
+        )
+        return url, {"Authorization": f"Bearer {api_key}"}, str(easyllm_id)
+
+    @staticmethod
+    def _create_validation_audio() -> str:
+        descriptor, path = tempfile.mkstemp(prefix="sophnet-stt-", suffix=".wav")
+        os.close(descriptor)
+        try:
+            with wave.open(path, "wb") as audio:
+                audio.setnchannels(1)
+                audio.setsampwidth(2)
+                audio.setframerate(16000)
+                audio.writeframes(b"\x00\x00" * 1600)
+        except Exception:
+            os.unlink(path)
+            raise
+        return path
 
     @property
     def _invoke_error_mapping(self) -> dict:
-        # 只需简单映射即可
         return {
             InvokeBadRequestError: [InvokeBadRequestError],
+            InvokeConnectionError: [InvokeConnectionError],
             CredentialsValidateFailedError: [CredentialsValidateFailedError],
             InvokeError: [Exception],
         }
-        
-    def _get_demo_file_path(self) -> str:
-        """
-        返回用于验证凭证的示例音频文件路径
-        如果文件不存在，则创建一个空的音频文件
-        
-        :return: 音频文件路径
-        """
-        # 获取当前文件所在目录
-        current_dir = pathlib.Path(__file__).parent.absolute()
-        
-        # 创建测试文件目录
-        test_dir = current_dir / "test_data"
-        os.makedirs(test_dir, exist_ok=True)
-        
-        # 测试音频文件路径
-        test_file = test_dir / "test_audio.wav"
-        
-        # 如果文件不存在，创建一个空的WAV文件
-        if not test_file.exists():
-            # 创建一个最小化的WAV文件头
-            with open(test_file, "wb") as f:
-                # RIFF header
-                f.write(b"RIFF")  # ChunkID
-                f.write(b"\x24\x00\x00\x00")  # ChunkSize (36 + SubChunk2Size)
-                f.write(b"WAVE")  # Format
-                
-                # fmt subchunk
-                f.write(b"fmt ")  # Subchunk1ID
-                f.write(b"\x10\x00\x00\x00")  # Subchunk1Size (16 for PCM)
-                f.write(b"\x01\x00")  # AudioFormat (1 for PCM)
-                f.write(b"\x01\x00")  # NumChannels (1 for mono)
-                f.write(b"\x44\xAC\x00\x00")  # SampleRate (44100)
-                f.write(b"\x88\x58\x01\x00")  # ByteRate (SampleRate * NumChannels * BitsPerSample/8)
-                f.write(b"\x02\x00")  # BlockAlign (NumChannels * BitsPerSample/8)
-                f.write(b"\x10\x00")  # BitsPerSample (16)
-                
-                # data subchunk
-                f.write(b"data")  # Subchunk2ID
-                f.write(b"\x00\x00\x00\x00")  # Subchunk2Size (0 for empty audio)
-        
-        return str(test_file)

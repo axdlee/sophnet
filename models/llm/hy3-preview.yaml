@@ -1,0 +1,28 @@
+model: Hy3-preview
+label:
+  zh_Hans: Hy3-preview
+  en_US: Hy3-preview
+model_type: llm
+features:
+  - tool-call
+  - stream-tool-call
+  - agent-thought
+model_properties:
+  mode: chat
+  context_size: 256000
+parameter_rules:
+  - name: max_tokens
+    use_template: max_tokens
+    min: 1
+    max: 48000
+    default: 8192
+  - name: temperature
+    use_template: temperature
+    default: 0.6
+  - name: top_p
+    use_template: top_p
+pricing:
+  input: '2'
+  output: '8'
+  unit: '0.000001'
+  currency: RMB

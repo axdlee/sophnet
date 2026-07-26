@@ -6,23 +6,24 @@ model_type: llm
 features:
   - tool-call
   - stream-tool-call
+  - structured-output
   - agent-thought
 model_properties:
   mode: chat
-  context_size: 65536
+  context_size: 1000000
 parameter_rules:
   - name: max_tokens
     use_template: max_tokens
     type: int
     default: 8192
     min: 1
-    max: 65536
+    max: 48000
     required: false
     help:
       zh_Hans: 模型回复最大长度（单位 token）。如果生成结果截断，可以调大该参数。
       en_US: The maximum length of the model's response (in tokens). If the generated results are truncated, you can increase this parameter.
 pricing:
-  input: '4'
-  output: '16'
+  input: '3'
+  output: '6'
   unit: '0.000001'
   currency: RMB

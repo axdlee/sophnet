@@ -1,60 +1,35 @@
 # Privacy Policy
 
-This document outlines how the Sophnet plugin ("the Plugin") handles user data. We are committed to protecting your privacy and ensuring transparency in our data practices.
+Last updated: July 25, 2026
 
-## Data Collection and Usage
+This policy describes how the SophNet Dify plugin processes data.
 
-The Sophnet plugin is designed with privacy in mind. Here's how we handle your data:
+## Data processed
 
-### 1. Data Collection
+Depending on the selected model, the plugin sends the following data to SophNet to perform the requested inference:
 
-The Plugin may collect and process the following types of data:
+- SophNet API Key, Project ID, and configured EasyLLM ID
+- Prompts, conversation messages, tool definitions, and model parameters
+- Text submitted for embedding or text-to-speech
+- Audio submitted for speech-to-text
+- Images, video, or audio included in supported multimodal prompts
 
-#### Directly Identifiable Information
-- None
+## Purpose and storage
 
-#### Indirectly Identifiable Information
-- API Key (for api request)
-- Project Id (for api request)
-- Easy LLM ID (for api request)
+The data is used only to authenticate with SophNet and fulfill model inference requests. The plugin does not create its own persistent storage for credentials, prompts, media, model responses, or generated audio. Dify and SophNet may process or retain data according to their own deployment settings and policies.
 
-#### Combined Information
-- None
+## Third-party service
 
-### 2. Purpose of Data Collection
+The plugin communicates with [SophNet](https://www.sophnet.com/) over HTTPS. SophNet receives the request data described above and returns model output or task status. Review SophNet's current service terms and privacy policy before using the plugin with sensitive data.
 
-The collected data is used for:
-- Help user request Sophnet API
+## Security
 
-### 3. Data Storage and Retention
+Credentials are passed to SophNet in authorization headers and are not included in plugin error messages. Users are responsible for limiting API key permissions, rotating credentials, and securing their Dify deployment.
 
-- None
+## User choices
 
-### 4. Third-Party Services
+You can stop data processing by removing the SophNet credentials from Dify or uninstalling the plugin. Requests already transmitted to SophNet are governed by SophNet's applicable policies.
 
-The Plugin may interact with the following third-party services:
-- None currently
+## Contact
 
-### 5. Data Security
-
-We implement appropriate technical and organizational measures to protect your data, including:
-- Encryption of sensitive data
-- Secure storage practices
-- Regular security assessments
-
-### 6. User Rights
-
-You have the right to:
-- Access your personal data
-- Request deletion of your data
-- Opt-out of data collection (where applicable)
-
-### 7. Updates to Privacy Policy
-
-We may update this privacy policy from time to time. The latest version will always be available in this document.
-
-### 8. Contact Information
-
-For any privacy-related questions or concerns, please contact the plugin author through the Dify Marketplace.
-
-Last Updated: June 14, 2025 
+For privacy questions, open an issue at <https://github.com/axdlee/sophnet/issues>.
