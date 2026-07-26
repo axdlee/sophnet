@@ -28,6 +28,7 @@ class SophnetLargeLanguageModel(OAICompatLargeLanguageModel):
     MODEL_ALIASES = {
         "DeepSeek-V3.1": "DeepSeek-V4-Flash",
         "DeepSeek-R1": "DeepSeek-V4-Pro",
+        "qwen-vl-plus-latest": "qwen3-vl-plus",
     }
 
     def _invoke(

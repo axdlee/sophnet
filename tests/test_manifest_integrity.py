@@ -82,3 +82,14 @@ def test_current_public_text_models_are_present() -> None:
         "qwen3.7-max",
     }
     assert expected <= models
+
+
+def test_retired_model_ids_remain_available_for_existing_dify_apps() -> None:
+    model_dir = ROOT / "models" / "llm"
+    models = {
+        load_yaml(path)["model"]
+        for path in model_dir.glob("*.yaml")
+        if path.name != "_position.yaml"
+    }
+
+    assert {"DeepSeek-V3.1", "DeepSeek-R1", "qwen-vl-plus-latest"} <= models

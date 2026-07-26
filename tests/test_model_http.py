@@ -79,6 +79,7 @@ def test_llm_invoke_uses_enriched_copy_without_mutating_credentials() -> None:
     [
         ("DeepSeek-V3.1", "DeepSeek-V4-Flash"),
         ("DeepSeek-R1", "DeepSeek-V4-Pro"),
+        ("qwen-vl-plus-latest", "qwen3-vl-plus"),
     ],
 )
 def test_llm_invoke_maps_retired_models_to_supported_replacements(

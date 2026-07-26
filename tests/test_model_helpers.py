@@ -56,6 +56,7 @@ def test_llm_token_count_delegates_to_sdk() -> None:
     [
         ("DeepSeek-V3.1", "DeepSeek-V4-Flash"),
         ("DeepSeek-R1", "DeepSeek-V4-Pro"),
+        ("qwen-vl-plus-latest", "qwen3-vl-plus"),
     ],
 )
 def test_llm_legacy_aliases_apply_to_token_count_and_validation(
