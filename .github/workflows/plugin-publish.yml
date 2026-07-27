@@ -91,20 +91,58 @@ jobs:
             --base main \
             --title "bump ${{ steps.manifest.outputs.name }} plugin to version ${{ steps.manifest.outputs.version }}" \
             --body-file - <<'EOF'
-          ## Summary
+          # Plugin Submission
 
-          Upgrade the SophNet model provider plugin with current SophNet models and Dify Plugin SDK compatibility.
+          ## Plugin information
 
-          ## Change Type
+          - **Author**: `${{ steps.manifest.outputs.author }}`
+          - **Plugin name**: `${{ steps.manifest.outputs.name }}`
+          - **Version**: `${{ steps.manifest.outputs.version }}`
+          - **Source repository**: https://github.com/axdlee/sophnet
+          - **Contact**: https://github.com/axdlee/sophnet/issues
 
-          - [x] LLM plugin
+          ## Submission type
 
-          ## Version
+          - [ ] New plugin
+          - [x] Version update
 
-          - [x] Bumped top-level `version` in `manifest.yaml`
-          - [x] Declared and locked the supported `dify_plugin` SDK version
+          ## What changed
 
-          ## Testing
+          Update the SophNet model provider package to version `${{ steps.manifest.outputs.version }}`.
+          See the source release and commit history for the model and compatibility changes included in this version.
 
-          - [x] Local deployment - Dify 1.16
+          ## Risk level
+
+          - [ ] Low risk
+          - [x] Medium risk
+          - [ ] High risk
+
+          The plugin sends user-provided model input to the fixed SophNet HTTPS API to perform inference.
+
+          ## Required checks
+
+          - [x] I have read and followed the [Marketplace submission requirements](https://github.com/langgenius/dify-plugins/blob/main/docs/plugin-submission-requirements.md).
+          - [x] I have read and comply with the Plugin Developer Agreement.
+          - [ ] I tested this plugin on Dify Community Edition and Dify Cloud, or documented any limitation below.
+          - [x] The package contains only files needed at runtime.
+          - [x] The package does not contain secrets, local credentials, `.env` files, `.git` directories, virtual environments, caches, logs, or IDE files.
+          - [x] The package does not contain executables or bundled binaries, or I explained why they are required below.
+          - [x] The plugin README includes setup steps, usage instructions, required APIs or credentials, connection requirements, and the source repository link.
+          - [x] The plugin includes `PRIVACY.md` or a hosted privacy policy, and `manifest.yaml` references it.
+          - [x] All user-facing text is primarily in English, with any localized README files following the [i18n guidance](https://docs.dify.ai/en/develop-plugin/features-and-specs/plugin-types/multilingual-readme).
+
+          ## Security and privacy notes
+
+          - Sends prompts, model parameters, embedding text, speech, and supported multimodal input to SophNet over HTTPS.
+          - Uses fixed SophNet API endpoints; it does not execute code or commands, access SQL/SSH/SFTP, operate on the filesystem, automate browsers, or proxy arbitrary URLs.
+          - Credentials are sent only in authorization headers and are not persisted or included in plugin error messages.
+          - See `PRIVACY.md` for the complete data-processing disclosure.
+
+          ## Local validation
+
+          The package is built with Dify plugin daemon CLI `0.6.5`. Add the release-specific test commands and Dify runtime results before requesting review.
+
+          ## Reviewer notes
+
+          Dify Community Edition and Dify Cloud validation status must be confirmed manually before review.
           EOF
