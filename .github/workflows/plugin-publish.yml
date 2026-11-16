@@ -90,6 +90,9 @@ jobs:
 
           # Move the packaged file to the target directory using variables
           mkdir -p dify-plugins/${{ steps.get_basic_info.outputs.author }}/${{ steps.get_basic_info.outputs.plugin_name }}
+          # Keep only the latest package in the directory (marketplace packaging rules R3)
+          find "dify-plugins/${{ steps.get_basic_info.outputs.author }}/${{ steps.get_basic_info.outputs.plugin_name }}" \
+            -maxdepth 1 -name "*.difypkg" ! -name "$PACKAGE_NAME" -delete
           mv "$PACKAGE_NAME" dify-plugins/${{ steps.get_basic_info.outputs.author }}/${{ steps.get_basic_info.outputs.plugin_name }}/
 
           # Enter the target repository directory
