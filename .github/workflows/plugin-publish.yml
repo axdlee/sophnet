@@ -88,13 +88,6 @@ jobs:
           echo "Debug: Package name: $PACKAGE_NAME"
           ls -la
 
-          # Move the packaged file to the target directory using variables
-          mkdir -p dify-plugins/${{ steps.get_basic_info.outputs.author }}/${{ steps.get_basic_info.outputs.plugin_name }}
-          # Keep only the latest package in the directory (marketplace packaging rules R3)
-          find "dify-plugins/${{ steps.get_basic_info.outputs.author }}/${{ steps.get_basic_info.outputs.plugin_name }}" \
-            -maxdepth 1 -name "*.difypkg" ! -name "$PACKAGE_NAME" -delete
-          mv "$PACKAGE_NAME" dify-plugins/${{ steps.get_basic_info.outputs.author }}/${{ steps.get_basic_info.outputs.plugin_name }}/
-
           # Enter the target repository directory
           cd dify-plugins
 
@@ -102,14 +95,20 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-          # Ensure we are on the latest main branch
-          git fetch origin main
-          git checkout main
-          git pull origin main
+          # Base the publishing branch on the upstream main (not the fork), so retired
+          # package files are visible and can be removed in this PR
+          git fetch --depth=1 https://github.com/langgenius/dify-plugins.git main
+          git reset --hard FETCH_HEAD
 
           # Create and switch to a new branch using variables and new naming convention
           BRANCH_NAME="bump-${{ steps.get_basic_info.outputs.plugin_name }}-plugin-${{ steps.get_basic_info.outputs.version }}"
-          git checkout -b "$BRANCH_NAME"
+          git checkout -B "$BRANCH_NAME"
+
+          PLUGIN_DIR="${{ steps.get_basic_info.outputs.author }}/${{ steps.get_basic_info.outputs.plugin_name }}"
+          mkdir -p "$PLUGIN_DIR"
+          # Keep only the latest package in the directory (marketplace packaging rules R3)
+          find "$PLUGIN_DIR" -maxdepth 1 -name "*.difypkg" ! -name "$PACKAGE_NAME" -delete
+          mv "../$PACKAGE_NAME" "$PLUGIN_DIR"/
 
           # Add and commit changes (using git add .)
           git add .
