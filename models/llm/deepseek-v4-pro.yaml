@@ -6,6 +6,7 @@ model_type: llm
 features:
   - tool-call
   - stream-tool-call
+  - structured-output
   - agent-thought
 model_properties:
   mode: chat
@@ -23,6 +24,11 @@ parameter_rules:
     use_template: top_p
   - name: presence_penalty
     use_template: presence_penalty
+  - name: response_format
+    use_template: response_format
+    options:
+      - text
+      - json_object
 pricing:
   input: '6'
   output: '12'

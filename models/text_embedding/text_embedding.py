@@ -1,7 +1,7 @@
-import json
-import time
-from typing import Optional, List
-from dify_plugin.interfaces.model.openai_compatible.text_embedding import OAICompatEmbeddingModel
+from typing import Any
+
+import requests
+from dify_plugin import OAICompatEmbeddingModel
 from dify_plugin.entities import I18nObject
 from dify_plugin.entities.model import (
     AIModelEntity,
@@ -13,108 +13,78 @@ from dify_plugin.entities.model import (
     ParameterType,
     PriceConfig,
 )
-from dify_plugin.entities.model.text_embedding import (
-    EmbeddingUsage,
-    TextEmbeddingResult,
+from dify_plugin.entities.model.text_embedding import TextEmbeddingResult
+from dify_plugin.errors.model import (
+    CredentialsValidateFailedError,
+    InvokeBadRequestError,
+    InvokeConnectionError,
 )
-from dify_plugin.errors.model import CredentialsValidateFailedError
-import requests
+
 
 class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
-    """
-    Model class for Sophnet text embedding model.
-    """
+    """SophNet text embedding model using the EasyLLM project API."""
+
+    _VARIABLE_DIMENSIONS = frozenset({1024, 768, 512, 256, 128, 64})
 
     def _invoke(
         self,
         model: str,
         credentials: dict,
-        texts: List[str],
-        user: Optional[str] = None,
+        texts: list[str],
+        user: str | None = None,
         input_type: EmbeddingInputType = EmbeddingInputType.DOCUMENT,
     ) -> TextEmbeddingResult:
-        """
-        Sophnet embedding接口分批调用，兼容OAI接口风格
-        """
-        # 获取模型参数
+        del user, input_type
         context_size = self._get_context_size(model, credentials)
         max_chunks = self._get_max_chunks(model, credentials)
         url, headers, easyllm_id, dimensions = self._build_request_params(credentials, model)
+        processed_texts = [self._truncate_text(text, context_size) for text in texts]
 
-        # 1. 按context_size截断每条文本
-        processed_texts = []
-        for text in texts:
-            num_tokens = self._get_num_tokens_by_gpt2(text)
-            if num_tokens > context_size:
-                # 近似按字符截断
-                cutoff = int(len(text) * context_size / num_tokens)
-                processed_texts.append(text[:cutoff])
-            else:
-                processed_texts.append(text)
-
-        # 2. 按max_chunks分批请求
-        all_embeddings = []
+        all_embeddings: list[list[float]] = []
         total_tokens = 0
-
-        for i in range(0, len(processed_texts), max_chunks):
-            batch_texts = processed_texts[i:i+max_chunks]
-            payload = {
-                "easyllm_id": easyllm_id,
-                "input_texts": batch_texts,
-                "dimensions": dimensions
-            }
-            try:
-                response = requests.post(url, headers=headers, json=payload, timeout=30)
-                response.raise_for_status()
-                data = response.json()
-            except Exception as e:
-                raise RuntimeError(f"Sophnet embedding API call failed: {e}")
-
-            # 解析返回结果
-            batch_embeddings = [item["embedding"] for item in data.get("data", [])]
+        for offset in range(0, len(processed_texts), max_chunks):
+            batch_texts = processed_texts[offset : offset + max_chunks]
+            data = self._request_embeddings(
+                url,
+                headers,
+                {"easyllm_id": easyllm_id, "input_texts": batch_texts, "dimensions": dimensions},
+            )
+            batch_embeddings = self._extract_embeddings(data, len(batch_texts), dimensions)
             all_embeddings.extend(batch_embeddings)
-            usage = data.get("usage", {})
-            total_tokens += usage.get("total_tokens", 0) or 0
-
-        # 用法统计
-        usage_obj = self._calc_response_usage(model=model, credentials=credentials, tokens=total_tokens)
+            total_tokens += int(data.get("usage", {}).get("total_tokens") or 0)
 
         return TextEmbeddingResult(
             embeddings=all_embeddings,
-            usage=usage_obj,
-            model=model
+            usage=self._calc_response_usage(
+                model=model, credentials=credentials, tokens=total_tokens
+            ),
+            model=model,
         )
-    
 
     def validate_credentials(self, model: str, credentials: dict) -> None:
-        """
-        校验Sophnet API凭证有效性，需project_id、api_key、easyllm_id、dimensions
-        """
-        url, headers, easyllm_id, dimensions = self._build_request_params(credentials, model)
-        payload = {
-            "easyllm_id": easyllm_id,
-            "input_texts": ["ping"],
-            "dimensions": dimensions
-        }
         try:
-            response = requests.post(url, headers=headers, json=payload, timeout=10)
-            if response.status_code != 200:
-                raise CredentialsValidateFailedError(
-                    f"Credentials validation failed with status code {response.status_code}"
-                )
-            data = response.json()
-            if not data.get("data"):
-                raise CredentialsValidateFailedError("Credentials validation failed: no embedding data returned")
+            url, headers, easyllm_id, dimensions = self._build_request_params(credentials, model)
+            data = self._request_embeddings(
+                url,
+                headers,
+                {"easyllm_id": easyllm_id, "input_texts": ["ping"], "dimensions": dimensions},
+                timeout=10,
+            )
+            self._extract_embeddings(data, 1, dimensions)
+        except CredentialsValidateFailedError:
+            raise
         except Exception as ex:
-            raise CredentialsValidateFailedError(str(ex)) from ex
+            raise CredentialsValidateFailedError(
+                "SophNet embedding credentials validation failed"
+            ) from ex
 
     def get_customizable_model_schema(self, model: str, credentials: dict) -> AIModelEntity:
-        """
-        支持easyllm_id和dimensions为可配置参数，便于前端/调用方动态配置
-        """
-        entity = AIModelEntity(
+        return AIModelEntity(
             model=model,
-            label=I18nObject(en_US=f"Sophnet Embedding ({model})"),
+            label=I18nObject(
+                en_US=f"SophNet Embedding ({model})",
+                zh_Hans=f"SophNet 向量模型 ({model})",
+            ),
             model_type=ModelType.TEXT_EMBEDDING,
             fetch_from=FetchFrom.CUSTOMIZABLE_MODEL,
             model_properties={
@@ -127,48 +97,107 @@ class SophnetTextEmbeddingModel(OAICompatEmbeddingModel):
                     label=I18nObject(en_US="EasyLLM ID", zh_Hans="EasyLLM ID"),
                     type=ParameterType.STRING,
                     required=True,
-                    default=model
+                    default=model,
                 ),
                 ParameterRule(
                     name="dimensions",
-                    label=I18nObject(en_US="Embedding Dimensions, support 1,024/768/512/256/128/64", zh_Hans="输出Embeddings的维度，支持1,024/768/512/256/128/64"),
+                    label=I18nObject(
+                        en_US="Embedding dimensions",
+                        zh_Hans="向量维度",
+                    ),
                     type=ParameterType.INT,
                     required=True,
-                    default="1024",
-                    options=["1024", "768", "512", "256", "128", "64"]
+                    default=1024,
+                    options=["1024", "768", "512", "256", "128", "64"],
                 ),
             ],
-            pricing=PriceConfig(
-                input=0.5, # https://www.sophnet.com/docs/component/fee.html
-                output=0,
-                unit=0.000001,
-                currency="RMB"
-            ),
+            pricing=PriceConfig(input=0.5, output=0, unit=0.000001, currency="RMB"),
         )
-        return entity
 
+    def _truncate_text(self, text: str, context_size: int) -> str:
+        token_count = self._get_num_tokens_by_gpt2(text)
+        if token_count <= context_size:
+            return text
+        cutoff = max(1, int(len(text) * context_size / token_count))
+        return text[:cutoff]
 
-    def _build_request_params(self, credentials: dict, model: str):
-        """
-        提取公共参数和请求头，返回url, headers, easyllm_id, dimensions
-        """
-        self._add_custom_parameters(credentials)
-        api_key = credentials.get("api_key")
-        easyllm_id = credentials.get("easyllm_id", model)
-        dimensions = int(credentials.get("dimensions", 1024))
-        url = credentials.get("endpoint_url", "")
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-        return url, headers, easyllm_id, dimensions
-    
-    @classmethod
-    def _add_custom_parameters(cls, credentials: dict) -> None:
+    @staticmethod
+    def _request_embeddings(
+        url: str,
+        headers: dict[str, str],
+        payload: dict[str, Any],
+        timeout: int = 30,
+    ) -> dict[str, Any]:
+        response: requests.Response | None = None
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=timeout)
+            response.raise_for_status()
+            data = response.json()
+        except requests.RequestException as ex:
+            raise InvokeConnectionError("SophNet embedding API request failed") from ex
+        except ValueError as ex:
+            raise InvokeBadRequestError("SophNet embedding API returned invalid JSON") from ex
+        finally:
+            if response is not None:
+                response.close()
+        if not isinstance(data, dict):
+            raise InvokeBadRequestError("SophNet embedding API returned an invalid response")
+        return data
+
+    @staticmethod
+    def _extract_embeddings(
+        data: dict[str, Any], expected_count: int, expected_dimensions: int | None = None
+    ) -> list[list[float]]:
+        items = data.get("data")
+        if not isinstance(items, list) or len(items) != expected_count:
+            raise InvokeBadRequestError(
+                f"SophNet embedding API returned {len(items) if isinstance(items, list) else 0} "
+                f"vectors for {expected_count} inputs"
+            )
+        try:
+            embeddings = [item["embedding"] for item in items]
+        except (KeyError, TypeError) as ex:
+            raise InvokeBadRequestError(
+                "SophNet embedding response is missing embedding data"
+            ) from ex
+        for embedding in embeddings:
+            if not isinstance(embedding, list) or not all(
+                isinstance(value, (int, float)) and not isinstance(value, bool)
+                for value in embedding
+            ):
+                raise InvokeBadRequestError("SophNet embedding response contains an invalid vector")
+            if expected_dimensions is not None and len(embedding) != expected_dimensions:
+                raise InvokeBadRequestError(
+                    f"SophNet embedding API returned a {len(embedding)}-dimension vector; "
+                    f"expected {expected_dimensions}"
+                )
+        return embeddings
+
+    def _build_request_params(
+        self, credentials: dict, model: str
+    ) -> tuple[str, dict[str, str], str, int]:
         project_id = credentials.get("project_id")
+        api_key = credentials.get("api_key")
         if not project_id:
             raise ValueError("project_id is required")
-        api_key = credentials.get("api_key")
         if not api_key:
             raise ValueError("api_key is required")
-        credentials["endpoint_url"] = f"https://www.sophnet.com/api/open-apis/projects/{project_id}/easyllms/embeddings"
+
+        easyllm_id = str(credentials.get("easyllm_id") or model)
+        dimensions = self._validate_dimensions(model, int(credentials.get("dimensions", 1024)))
+        url = f"https://www.sophnet.com/api/open-apis/projects/{project_id}/easyllms/embeddings"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        return url, headers, easyllm_id, dimensions
+
+    @classmethod
+    def _validate_dimensions(cls, model: str, dimensions: int) -> int:
+        if model == "bge-m3" and dimensions != 1024:
+            raise ValueError("bge-m3 only supports 1024 dimensions")
+        if model != "bge-m3" and dimensions not in cls._VARIABLE_DIMENSIONS:
+            supported = ", ".join(
+                str(item) for item in sorted(cls._VARIABLE_DIMENSIONS, reverse=True)
+            )
+            raise ValueError(
+                f"unsupported embedding dimensions: {dimensions}; expected one of {supported}"
+            )
+        return dimensions
