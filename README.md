@@ -1,6 +1,6 @@
 # Sophnet
 
-SophNet provides full-blood DeepSeek R1/V3, Qwen, QwQ models, and its own DeepSeek V3 Fast model, as well as text-to-speech, speech-to-text, text embedding, image OCR, document parsing, and other models.
+SophNet provides frontier LLMs such as DeepSeek-V4, GLM-5, Kimi-K3, Qwen3.8 and MiniMax-M3, as well as text-to-speech, speech-to-text, and text embedding models.
 
 ---
 
@@ -14,7 +14,7 @@ After installing the plugin, configure your Sophnet settings in the Model Provid
 ## Features
 
 ### Large Language Models (LLM)
-- Full access to DeepSeek R1/V3, Qwen, QwQ models
+- Full access to DeepSeek-V4, GLM-5, Kimi-K3, Qwen3.x, MiniMax and more
 - Customizable parameters for each model
 - Support for both chat and completion APIs
 

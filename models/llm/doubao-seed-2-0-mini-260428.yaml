@@ -1,15 +1,16 @@
-model: GLM-4.7
+model: doubao-seed-2-0-mini-260428
 label:
-  zh_Hans: GLM-4.7
-  en_US: GLM-4.7
+  zh_Hans: doubao-seed-2-0-mini-260428
+  en_US: doubao-seed-2-0-mini-260428
 model_type: llm
 features:
   - tool-call
   - stream-tool-call
+  - vision
   - agent-thought
 model_properties:
   mode: chat
-  context_size: 202000
+  context_size: 256000
 parameter_rules:
   - name: max_tokens
     use_template: max_tokens
@@ -29,7 +30,7 @@ parameter_rules:
       - text
       - json_object
 pricing:
-  input: '4'
-  output: '16'
+  input: '0.8'
+  output: '8'
   unit: '0.000001'
   currency: RMB

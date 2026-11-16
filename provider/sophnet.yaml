@@ -3,8 +3,8 @@ label:
   en_US: SophNet
   zh_Hans: SophNet 算能
 description:
-  en_US: SophNet provides full-blood DeepSeek R1/V3, Qwen, QwQ models, and its own DeepSeek V3 Fast model, as well as text-to-speech, image OCR, document parsing, and other models.
-  zh_Hans: SophNet 提供满血版 DeepSeek R1/V3，Qwen, QwQ 模型，以及其独有的 DeepSeek V3 Fast 模型, 此外还提供文字转语音，图片OCR， 文档解析等模型。
+  en_US: SophNet provides frontier LLMs such as DeepSeek-V4, GLM-5, Kimi-K3, Qwen3.8 and MiniMax-M3, as well as text embedding, speech-to-text and text-to-speech models.
+  zh_Hans: SophNet 提供 DeepSeek-V4、GLM-5、Kimi-K3、Qwen3.8、MiniMax-M3 等前沿大模型，以及向量、语音识别、语音合成等模型。
 icon_large:
   en_US: icon.svg
 icon_small:

@@ -1,15 +1,16 @@
-model: Qwen3-Coder-Next
+model: glm-5.3-flash
 label:
-  zh_Hans: Qwen3-Coder-Next
-  en_US: Qwen3-Coder-Next
+  zh_Hans: glm-5.3-flash
+  en_US: glm-5.3-flash
 model_type: llm
 features:
   - tool-call
   - stream-tool-call
+  - vision
   - agent-thought
 model_properties:
   mode: chat
-  context_size: 200000
+  context_size: 1000000
 parameter_rules:
   - name: max_tokens
     use_template: max_tokens
@@ -29,7 +30,7 @@ parameter_rules:
       - text
       - json_object
 pricing:
-  input: '6'
-  output: '24'
+  input: '0.8'
+  output: '2.8'
   unit: '0.000001'
   currency: RMB

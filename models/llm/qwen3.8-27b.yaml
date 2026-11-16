@@ -1,11 +1,12 @@
-model: DeepSeek-V4-Flash
+model: qwen3.8-27b
 label:
-  zh_Hans: DeepSeek-V4-Flash
-  en_US: DeepSeek-V4-Flash
+  zh_Hans: qwen3.8-27b
+  en_US: qwen3.8-27b
 model_type: llm
 features:
   - tool-call
   - stream-tool-call
+  - vision
   - agent-thought
 model_properties:
   mode: chat
@@ -23,8 +24,13 @@ parameter_rules:
     use_template: top_p
   - name: presence_penalty
     use_template: presence_penalty
+  - name: response_format
+    use_template: response_format
+    options:
+      - text
+      - json_object
 pricing:
-  input: '1'
-  output: '2'
+  input: '3'
+  output: '12'
   unit: '0.000001'
   currency: RMB

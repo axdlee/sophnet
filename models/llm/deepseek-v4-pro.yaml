@@ -24,7 +24,7 @@ parameter_rules:
   - name: presence_penalty
     use_template: presence_penalty
 pricing:
-  input: '9'
-  output: '18'
+  input: '6'
+  output: '12'
   unit: '0.000001'
   currency: RMB

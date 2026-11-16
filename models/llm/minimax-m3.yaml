@@ -1,27 +1,30 @@
-model: Qwen2.5-VL-32B-Instruct
+model: MiniMax-M3
 label:
-  en_US: Qwen2.5-VL-32B-Instruct
+  zh_Hans: MiniMax-M3
+  en_US: MiniMax-M3
 model_type: llm
 features:
-  - vision
+  - tool-call
+  - stream-tool-call
+  - agent-thought
 model_properties:
   mode: chat
-  context_size: 128000
+  context_size: 512000
 parameter_rules:
+  - name: max_tokens
+    use_template: max_tokens
+    min: 1
+    max: 16384
+    default: 8192
   - name: temperature
     use_template: temperature
     default: 0.6
-  - name: max_tokens
-    use_template: max_tokens
-    default: 4096
-    min: 1
-    max: 128000
   - name: top_p
     use_template: top_p
   - name: presence_penalty
     use_template: presence_penalty
 pricing:
-  input: '8'
-  output: '24'
+  input: '4.2'
+  output: '16.8'
   unit: '0.000001'
   currency: RMB

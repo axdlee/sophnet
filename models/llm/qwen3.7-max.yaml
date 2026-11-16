@@ -1,27 +1,30 @@
-model: Qwen2.5-7B-Instruct
+model: qwen3.7-max
 label:
-  en_US: Qwen2.5-7B-Instruct
+  zh_Hans: qwen3.7-max
+  en_US: qwen3.7-max
 model_type: llm
 features:
+  - tool-call
+  - stream-tool-call
   - agent-thought
 model_properties:
   mode: chat
-  context_size: 128000
+  context_size: 1000000
 parameter_rules:
+  - name: max_tokens
+    use_template: max_tokens
+    min: 1
+    max: 48000
+    default: 8192
   - name: temperature
     use_template: temperature
     default: 0.6
-  - name: max_tokens
-    use_template: max_tokens
-    default: 4096
-    min: 1
-    max: 128000
   - name: top_p
     use_template: top_p
   - name: presence_penalty
     use_template: presence_penalty
 pricing:
-  input: '0.5'
-  output: '1'
+  input: '12'
+  output: '36'
   unit: '0.000001'
   currency: RMB
