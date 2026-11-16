@@ -39,6 +39,7 @@ After installing the plugin, configure your Sophnet settings in the Model Provid
 ---
 
 ## About Sophnet
+Source Repository [axdlee/sophnet](https://github.com/axdlee/sophnet)
 Website [Sophnet](https://www.sophnet.com/)
 Supported Models  [Models](https://www.sophnet.com/#/model/list)
 Sophnet API Document [API](https://www.sophnet.com/docs/component/API.html)

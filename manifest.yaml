@@ -38,4 +38,8 @@ type: plugin
 version: 0.0.8
 privacy: PRIVACY.md
 repo: https://github.com/axdlee/sophnet
+contact: xdlee110@gmail.com
+tags:
+  - model_provider
+  - llm
 verified: false
